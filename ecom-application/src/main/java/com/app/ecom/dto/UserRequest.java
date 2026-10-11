@@ -3,7 +3,7 @@ package com.app.ecom.dto;
 import lombok.Data;
 
 @Data
-public class RequestUser {
+public class UserRequest {
 
     private String firstName;
     private String lastName;

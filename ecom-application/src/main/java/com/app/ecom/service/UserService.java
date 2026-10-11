@@ -1,7 +1,9 @@
 package com.app.ecom.service;
 
 import com.app.ecom.dto.AddressDTO;
+import com.app.ecom.dto.UserRequest;
 import com.app.ecom.dto.UserResponse;
+import com.app.ecom.model.Address;
 import com.app.ecom.repository.UserRepository;
 import com.app.ecom.model.User;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +17,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-//    private List<User> userList = new ArrayList<>();
-//    private Long nextId = 1L;
 
     public List<UserResponse> fetchAllUsers(){
         List<User> userList = userRepository.findAll();
@@ -25,23 +25,41 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public void addUser(User user){
-//        user.setId(nextId++);
+    public void addUser(UserRequest userRequest){
+        User user = new User();
+        UpdatedUsersFromRequest(user, userRequest);
         userRepository.save(user);
     }
 
-    public Optional<User> fetchUser(Long id){
-       return userRepository.findById(id);
+    public Optional<UserResponse> fetchUser(Long id){
+       return userRepository.findById(id)
+               .map(this::mapToUserResponse);
     }
 
-    public boolean updatedUser(Long id, User updatedUser){
+    public boolean updatedUser(Long id, UserRequest updatedUserRequest){
         return userRepository.findById(id)
                 .map(existingUser -> {
-                    existingUser.setFirstName(updatedUser.getFirstName());
-                    existingUser.setLastName(updatedUser.getLastName());
+                    UpdatedUsersFromRequest(existingUser, updatedUserRequest);
                     userRepository.save(existingUser);
                     return true;
                 }).orElse(false);
+    }
+
+    private void UpdatedUsersFromRequest(User user, UserRequest userRequest) {
+        user.setFirstName(userRequest.getFirstName());
+        user.setLastName(userRequest.getLastName());
+        user.setEmail(userRequest.getEmail());
+        user.setPhone(userRequest.getPhone());
+
+        if(userRequest.getAddress()!=null){
+            Address address = new Address();
+            address.setStreet(userRequest.getAddress().getStreet());
+            address.setCity(userRequest.getAddress().getCity());
+            address.setState(userRequest.getAddress().getState());
+            address.setCountry(userRequest.getAddress().getCountry());
+            address.setZipcode(userRequest.getAddress().getZipcode());
+            user.setAddress(address);
+        }
     }
 
     private UserResponse mapToUserResponse(User user){
