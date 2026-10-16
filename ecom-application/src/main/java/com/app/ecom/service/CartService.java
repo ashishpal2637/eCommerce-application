@@ -25,6 +25,7 @@ public class CartService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
 
+
     public boolean addToCart(String userId, CartItemRequest request) {
 
        Optional<Product> productOpt = productRepository.findById(request.getProductId());
@@ -76,5 +77,11 @@ public class CartService {
         return userRepository.findById(Long.valueOf(userId))
                 .map(cartItemRepository::findByUser)
                 .orElseGet(List::of);
+    }
+
+    public void clearCart(String userId) {
+        userRepository.findById(Long.valueOf(userId)).ifPresent(
+            cartItemRepository::deleteByUser
+        );
     }
 }
